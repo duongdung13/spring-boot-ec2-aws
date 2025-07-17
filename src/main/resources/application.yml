@@ -1,0 +1,21 @@
+spring:
+  task:
+    execution:
+      pool:
+        core-size: 10
+        max-size: 50
+        queue-capacity: 100
+      shutdown:
+        await-termination: true
+        await-termination-period: 30s
+
+server:
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 20
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, info
