@@ -1,0 +1,50 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build JAR
+        run: ./mvnw clean package -DskipTests
+
+      - name: Build Docker image
+        run: docker build -t spring-app .
+
+      - name: Save Docker image to archive
+        run: docker save spring-app > spring-app.tar
+
+      - name: Copy Docker image to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "spring-app.tar"
+          target: "/home/ubuntu/"
+
+      - name: SSH and deploy Docker container
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker load < spring-app.tar
+            docker stop spring-app || true
+            docker rm spring-app || true
+            docker run -d -p 8080:8080 --name spring-app spring-app

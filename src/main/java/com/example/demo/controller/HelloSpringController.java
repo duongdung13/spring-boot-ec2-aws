@@ -16,7 +16,7 @@ public class HelloSpringController {
     @GetMapping()
     ResponseEntity<?> sayHello() {
         Map<String, Object> result = new HashMap<>();
-        result.put("data", "Hello Spring!");
+        result.put("data", "Hello Spring! update 22h48 31/07");
         result.put("message", "Success");
         result.put("status", 200);
 
